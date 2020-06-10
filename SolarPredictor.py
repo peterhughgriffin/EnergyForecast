@@ -118,17 +118,40 @@ for date in Gen:
     Gen[date]['GenStart'] = Gen[date]['HH'][min(Index)]
     Gen[date]['GenEnd'] = Gen[date]['HH'][max(Index)]
                                       
+#%%
 
-
+GenStarts=[]
+GenEnds=[]
+for date in Gen:
+    GenStarts.append(Gen[date]['GenStart'])
+    GenEnds.append(Gen[date]['GenEnd'])
 
 #%%
 
-# fig=plt.figure()
-# plt.plot(Gen.keys(),Gen[date]['GenStart'])
-# # plt.ylabel("Generation (MW)")
-# # plt.xlabel("Date time stamp")
-# fig.autofmt_xdate()
+fig=plt.figure()
+plt.plot([i.datetime for i in list(Gen.keys())],GenEnds,label='End')
+plt.plot([i.datetime for i in list(Gen.keys())],GenStarts,label='Start')
+plt.ylabel("HH")
+plt.xlabel("Date time stamp")
+fig.autofmt_xdate()
 
+fig.legend()
 
+#%%
 
+PeakGen=[]
+TotalGen=[]
+
+for date in Gen:
+    PeakGen.append(Gen[date]['PeakGen'])
+    TotalGen.append(Gen[date]['TotalGen'])
+#%%
+fig=plt.figure()
+plt.plot([i.datetime for i in list(Gen.keys())],PeakGen,label='Peak Generation')
+plt.plot([i.datetime for i in list(Gen.keys())],TotalGen,label='Total Generation')
+plt.ylabel("HH")
+plt.xlabel("Date time stamp")
+fig.autofmt_xdate()
+
+fig.legend()
 
