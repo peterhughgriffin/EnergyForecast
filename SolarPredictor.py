@@ -194,9 +194,20 @@ class SolarData:
             self.GenEnd.append(self.data[date]['HH'][max(Index)])
 
 
-    def PlotGen(self,Start,End,Window=1,SpecificPoints = [], Peak=False,Total=False,Leg=True):
+    def PlotGen(self,Start,End,Leg=True, SpecificPoints = [], Window=1, Peak=False,Total=False):
         """
-        
+        This is the plotting function. It has various options that control what you plot.
+            Start - Start date of data to plot
+            End - End date of data to plot
+            Leg - Toggles whether the legend is shown or not.
+            SpecificPoints - A list of dates, if non-empty then the generation 
+                            solar curves just these dates are plotted against HH.
+                The following parameters are only used if SpecificPoints is empty.
+            Window - The size of the window used for smoothing via moving average.
+            Peak - If true then the Peak value of each day is plotted against date.
+            Total - If true then the total generation is plotted against date.
+        If SpecificPoints, Peak and Total are all False then generation is
+        plotted against HH for each date in the given range.
         """
         
         if SpecificPoints:
@@ -208,7 +219,7 @@ class SolarData:
                 Gen=self.data[i]['Generation']
                 plt.plot(HH,Gen,label=i)
             
-            plt.ylabel("Solar (MW)\n"+str(Window) + " day moving average")
+            plt.ylabel("Solar (MW)")
             plt.xlabel("HH")
             if Leg:
                 fig.legend()
@@ -277,9 +288,18 @@ End = "2019-12-31"
 
 KeyDates , KeyVals = GetVals(Solar,Start,End)
 
+# Plot key dates of interest
 Solar.PlotGen(Start,End,SpecificPoints = KeyDates['Best'])
 Solar.PlotGen(Start,End,SpecificPoints = KeyDates['Peak'])
 Solar.PlotGen(Start,End,SpecificPoints = KeyDates['Worst'])
+
+# Plot key metrics
+Solar.PlotGen(Start,End,Window=30,Total=True)
+Solar.PlotGen(Start,End,Window=30,Peak=True)
+
+# Plot all by HH
+Solar.PlotGen(Start,End,Leg=False)
+
 
 #%%
 
