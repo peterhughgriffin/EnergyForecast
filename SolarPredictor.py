@@ -194,7 +194,7 @@ class SolarData:
             self.GenEnd.append(self.data[date]['HH'][max(Index)])
 
 
-    def PlotGen(self,Start,End,Leg=True, SpecificPoints = [], Window=1, Peak=False,Total=False):
+    def PlotGen(self,Start,End,Leg=True, SpecificPoints = [], Window=1, Peak=False,Total=False, Rise=False, Set=False):
         """
         This is the plotting function. It has various options that control what you plot.
             Start - Start date of data to plot
@@ -229,7 +229,6 @@ class SolarData:
             if self.GetInd(End)-(self.GetInd(Start)+Window-1)<=Window:
                 raise ValueError("Your window size is smaller than the number of dates requested. Reduce Window")
             
-            
             if Peak:
                 PeakGen=self.PeakGen[self.GetInd(Start):self.GetInd(End)]
                 PeakGenSmooth=MovAve(PeakGen,Window)
@@ -252,6 +251,24 @@ class SolarData:
             
             if Leg:
                 fig.legend()
+                
+        
+        elif Rise or Set:
+               
+            DateList=list(self.data.keys())[self.GetInd(Start):self.GetInd(End)]
+            
+            fig=plt.figure()
+            if Rise:
+                plt.plot([i.datetime for i in DateList],self.GenStart[self.GetInd(Start):self.GetInd(End)],label='First HH')
+            if Set:
+                plt.plot([i.datetime for i in DateList],self.GenEnd[self.GetInd(Start):self.GetInd(End)],label='Last HH')
+            plt.ylabel("Time (HH)")
+            plt.xlabel("Date")
+            fig.autofmt_xdate()
+            
+            if Leg:
+                fig.legend()
+     
         else:
             
             DateList=list(self.data.keys())[self.GetInd(Start):self.GetInd(End)]
@@ -296,6 +313,7 @@ Solar.PlotGen(Start,End,SpecificPoints = KeyDates['Worst'])
 # Plot key metrics
 Solar.PlotGen(Start,End,Window=30,Total=True)
 Solar.PlotGen(Start,End,Window=30,Peak=True)
+Solar.PlotGen(Start,End,Window=30,Rise=True,Set=True)
 
 # Plot all by HH
 Solar.PlotGen(Start,End,Leg=False)
