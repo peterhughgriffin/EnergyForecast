@@ -146,7 +146,7 @@ class SolarData:
             self.GenEnd.append(self.data[date]['HH'][max(Index)])
 
 
-    def PlotGen(self,Start,End,Window=1,Peak=True,Total=True):
+    def PlotGen(self,Start,End,Window=1,Peak=False,Total=False):
         """
         
         """
@@ -179,10 +179,24 @@ class SolarData:
             
             fig.legend()
         else:
-            print("Nothing to plot :(")
+            
+            DateList=list(self.data.keys())[self.GetInd(Start)+Window-1:self.GetInd(End)]
+            
+            fig=plt.figure()
+            HH=[]
+            Gen=[]
+            for i in DateList:
+                HH=self.data[i]['HH']
+                Gen=self.data[i]['Generation']
+                plt.plot(HH,Gen,label=i)
+            
+            plt.ylabel("Solar (MW)\n"+str(Window) + " day moving average")
+            plt.xlabel("HH")
+            fig.legend()
 
 
-#%%
+
+
 
 # Start = arrow.get("2017-12-31T23:59:59")
 # Start = arrow.get("2013-01-01T00:00:00")
@@ -195,10 +209,10 @@ Solar.Calculate()
 #%%
 
 Start = "2020-01-01"
-End = "2020-06-15"
+End = "2020-01-03"
 
 
-Solar.PlotGen(Start,End,7,False,True)
+Solar.PlotGen(Start,End)
 
 
 #%%
@@ -253,21 +267,5 @@ fig.legend()
 Start = arrow.get("2020-04-01T00:00:00")
 End = arrow.get("2020-04-01T23:59:59")
 
-response=GetHistoricalGen(Start,End)
 
-dt=[]
-gen=[]
-for item in response.json()['data']:
-    dt.append(item[1])
-    gen.append(item[2])
-
-SolarGen={'dt':dt,'Generation':gen}
-
-
-# print(SolarGen)
-fig=plt.figure()
-plt.plot(SolarGen['dt'],SolarGen['Generation'])
-plt.ylabel("Generation (MW)")
-plt.xlabel("Date time stamp")
-fig.autofmt_xdate()
 
