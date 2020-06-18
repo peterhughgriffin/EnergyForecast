@@ -79,6 +79,54 @@ def MovAve(data,w):
     return np.convolve(data,mask,'valid')
 
 
+def GetVals(Solar,Start, End):
+        Start = arrow.Arrow.strptime(Start,"%Y-%m-%d")
+        End = arrow.Arrow.strptime(End,"%Y-%m-%d")
+        
+        PeakDays={}
+        Peak=[]
+        BestDays={}
+        Best=[]
+        WorstDays={}
+        Worst=[]
+        
+        for First in arrow.Arrow.range('month', Start, End):
+            
+            Last=First.shift(months=1,days=-1)
+            
+            FirstInd = Solar.GetInd(First)
+            LastInd = Solar.GetInd(Last)
+            
+            Val_Best = max (Solar.TotalGen[FirstInd : LastInd])
+            Ind_Best = Solar.TotalGen[FirstInd : LastInd].index(Val_Best)
+            Date = list(Solar.data.keys())[FirstInd+Ind_Best]
+            Best.append(Date)
+            BestDays[Date] = Val_Best
+            
+            Val_Peak = max (Solar.PeakGen[FirstInd : LastInd])
+            Ind_Peak = Solar.PeakGen[FirstInd : LastInd].index(Val_Peak)
+            Date = list(Solar.data.keys())[FirstInd+Ind_Peak]
+            Peak.append(Date)
+            PeakDays[Date] = Val_Peak
+            
+            Val_Worst = min (Solar.TotalGen[FirstInd : LastInd])
+            Ind_Worst = Solar.TotalGen[FirstInd : LastInd].index(Val_Worst)
+            Date = list(Solar.data.keys())[FirstInd+Ind_Worst]
+            Worst.append(Date)
+            WorstDays[Date] = Val_Worst
+            
+        Vals={'Peak' : PeakDays,
+              'Best' : BestDays,
+              'Worst': WorstDays
+              }
+        
+        Indices={'Peak' : Peak,
+                 'Best' : Best,
+                 'Worst': Worst
+                 }
+        
+        return (Indices,Vals)
+
 
 class SolarData:
     """
@@ -146,12 +194,26 @@ class SolarData:
             self.GenEnd.append(self.data[date]['HH'][max(Index)])
 
 
-    def PlotGen(self,Start,End,Window=1,Peak=False,Total=False):
+    def PlotGen(self,Start,End,Window=1,SpecificPoints = [], Peak=False,Total=False,Leg=True):
         """
         
         """
-        # Check we have something to plot
-        if Peak or Total:
+        
+        if SpecificPoints:
+            
+            fig=plt.figure()
+            
+            for i in SpecificPoints:
+                HH=self.data[i]['HH']
+                Gen=self.data[i]['Generation']
+                plt.plot(HH,Gen,label=i)
+            
+            plt.ylabel("Solar (MW)\n"+str(Window) + " day moving average")
+            plt.xlabel("HH")
+            if Leg:
+                fig.legend()
+        
+        elif Peak or Total:
             # Check Window size is smaller than data length
             if self.GetInd(End)-(self.GetInd(Start)+Window-1)<=Window:
                 raise ValueError("Your window size is smaller than the number of dates requested. Reduce Window")
@@ -177,14 +239,14 @@ class SolarData:
             plt.xlabel("Date")
             fig.autofmt_xdate()
             
-            fig.legend()
+            if Leg:
+                fig.legend()
         else:
             
-            DateList=list(self.data.keys())[self.GetInd(Start)+Window-1:self.GetInd(End)]
+            DateList=list(self.data.keys())[self.GetInd(Start):self.GetInd(End)]
             
             fig=plt.figure()
-            HH=[]
-            Gen=[]
+            
             for i in DateList:
                 HH=self.data[i]['HH']
                 Gen=self.data[i]['Generation']
@@ -192,27 +254,36 @@ class SolarData:
             
             plt.ylabel("Solar (MW)\n"+str(Window) + " day moving average")
             plt.xlabel("HH")
-            fig.legend()
-
-
+            if Leg:
+                fig.legend()
+                
+    
 
 
 
 # Start = arrow.get("2017-12-31T23:59:59")
-# Start = arrow.get("2013-01-01T00:00:00")
-Start = arrow.get("2020-01-01T00:00:00")
+Start = arrow.get("2013-01-01T00:00:00")
+# Start = arrow.get("2020-01-01T00:00:00")
 # End = arrow.get("2020-06-16T23:59:59")
 
 Solar=SolarData(Start)
 
 Solar.Calculate()
+
 #%%
 
-Start = "2020-01-01"
-End = "2020-01-03"
+Start = "2019-01-01"
+End = "2019-12-31"
 
+KeyDates , KeyVals = GetVals(Solar,Start,End)
 
-Solar.PlotGen(Start,End)
+Solar.PlotGen(Start,End,SpecificPoints = KeyDates['Best'])
+Solar.PlotGen(Start,End,SpecificPoints = KeyDates['Peak'])
+Solar.PlotGen(Start,End,SpecificPoints = KeyDates['Worst'])
+
+#%%
+
+    
 
 
 #%%
