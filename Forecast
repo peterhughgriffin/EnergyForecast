@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 20 12:00:29 2020
+
+@author: peter
+"""
+
+# Import some libraries
+import urllib.request
+from lxml import etree
+
+def GetKey():
+    #Read in the API key 
+    with open('MetOfficeKey.txt', 'r') as file:
+        Key = file.read()
+    return Key
+
+Key=GetKey()
+
+resource="val/wxfcs/all/xml/3840?res=3hourly"
+resource="txt/wxfcs/regionalforecast/xml/515"
+
+# resource = "txt/wxfcs/regionalforecast/xml/sitelist?"
+
+resource="val/wxfcs/all/xml/sitelist?"
+resource="val/wxfcs/all/xml/3000?res=3hourly&"
+
+url = "http://datapoint.metoffice.gov.uk/public/data/"+resource+"key="+Key
+
+xml = etree.parse(urllib.request.urlopen(url))
+root=xml.getroot()
+
+#%%
+print(etree.tostring(root, pretty_print=True))
+
+#%%
+for child in root:
+    print(child)
+    print(child.tag)
+    print(child.text)
+    for gchild in child:
+        print(gchild.tag)
+        print(gchild.text)
+    
+        
+        
+        
